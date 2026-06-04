@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DBTechAI — Field-Grade AI for the Trades</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Instrument+Sans:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080a0f;
+    --bg2: #0d1018;
+    --bg3: #111520;
+    --panel: #0f1319;
+    --border: rgba(255,255,255,0.07);
+    --border-bright: rgba(99,210,255,0.25);
+    --accent: #63d2ff;
+    --accent2: #00ffb2;
+    --accent3: #ff6b35;
+    --text: #e8eef4;
+    --muted: #6b7d8f;
+    --dim: #3a4a58;
+    --glow: rgba(99,210,255,0.12);
+    --glow2: rgba(0,255,178,0.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(99,210,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,210,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px;
+    background: rgba(8,10,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .nav-logo .db { color: var(--accent); }
+  .nav-logo .badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    font-weight: 400;
+    color: var(--accent2);
+    background: rgba(0,255,178,0.08);
+    border: 1px solid rgba(0,255,178,0.2);
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+  .nav-cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    padding: 10px 22px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .nav-cta:hover {
+    background: #9ae6ff;
+    box-shadow: 0 0 20px rgba(99,210,255,0.3);
+  }
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px 48px 80px;
+    overflow: hidden;
+    z-index: 1;
+  }
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+  }
+  .orb1 {
+    width: 600px; height: 600px;
+    top: -100px; right: -100px;
+    background: radial-gradient(circle, rgba(99,210,255,0.12) 0%, transparent 70%);
+    animation: orbpulse 8s ease-in-out infinite;
+  }
+  .orb2 {
+    width: 400px; height: 400px;
+    bottom: 0; left: -80px;
+    background: radial-gradient(circle, rgba(0,255,178,0.08) 0%, transparent 70%);
+    animation: orbpulse 10s ease-in-out infinite reverse;
+  }
+  @keyframes orbpulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.7; }
+  }
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeup 0.8s 0.2s forwards;
+  }
+  .hero-eyebrow::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(3rem, 7vw, 6.5rem);
+    line-height: 0.95;
+    letter-spacing: -0.03em;
+    max-width: 900px;
+    opacity: 0;
+    animation: fadeup 0.8s 0.35s forwards;
+  }
+  .hero-title .line2 { color: var(--accent); }
+  .hero-title .line3 { color: var(--muted); }
+  .hero-sub {
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 1.15rem;
+    color: var(--muted);
+    max-width: 520px;
+    margin-top: 28px;
+    line-height: 1.7;
+    opacity: 0;
+    animation: fadeup 0.8s 0.5s forwards;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 44px;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeup 0.8s 0.65s forwards;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 0.02em;
+    color: var(--bg);
+    background: var(--accent);
+    border: none;
+    padding: 16px 32px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,210,255,0.35); }
+  .btn-primary:hover::after { opacity: 1; }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--border-bright);
+    padding: 16px 32px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.25s;
+  }
+  .btn-secondary:hover {
+    background: rgba(99,210,255,0.06);
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .stats-strip {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: center;
+    background: var(--bg2);
+  }
+  .stat-item {
+    flex: 1;
+    max-width: 240px;
+    padding: 36px 40px;
+    border-right: 1px solid var(--border);
+    opacity: 0;
+    animation: fadeup 0.6s forwards;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-item:nth-child(1) { animation-delay: 0.1s; }
+  .stat-item:nth-child(2) { animation-delay: 0.2s; }
+  .stat-item:nth-child(3) { animation-delay: 0.3s; }
+  .stat-item:nth-child(4) { animation-delay: 0.4s; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.4rem;
+    color: var(--accent);
+    letter-spacing: -0.04em;
+    line-height: 1;
+  }
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  section { position: relative; z-index: 1; }
+  .section-inner { max-width: 1200px; margin: 0 auto; padding: 100px 48px; }
+  .section-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-eyebrow::before { content: '//'; opacity: 0.4; }
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    max-width: 700px;
+  }
+  .section-title .hl { color: var(--accent); }
+  .product-section { background: linear-gradient(180deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%); }
+  .product-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: center;
+    margin-top: 72px;
+  }
+  .product-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+  }
+  .product-card:hover { border-color: var(--border-bright); box-shadow: 0 0 40px var(--glow); }
+  .product-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .product-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(99,210,255,0.08);
+    border: 1px solid rgba(99,210,255,0.2);
+    padding: 5px 12px;
+    border-radius: 3px;
+    margin-bottom: 20px;
+  }
+  .product-tag .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent2);
+    animation: blink 1.5s infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+  .product-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+  .product-desc { color: var(--muted); line-height: 1.75; font-size: 1rem; margin-bottom: 28px; }
+  .feature-list { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+  .feature-list li { display: flex; align-items: flex-start; gap: 12px; font-size: 0.92rem; color: var(--text); }
+  .feature-list li::before { content: '→'; color: var(--accent2); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; margin-top: 2px; flex-shrink: 0; }
+  .mockup-panel { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; font-family: 'JetBrains Mono', monospace; }
+  .mockup-bar { background: #0a0d14; border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; gap: 8px; }
+  .dot-r { width: 10px; height: 10px; border-radius: 50%; background: #ff5f57; }
+  .dot-y { width: 10px; height: 10px; border-radius: 50%; background: #febc2e; }
+  .dot-g { width: 10px; height: 10px; border-radius: 50%; background: #28c840; }
+  .mockup-title { font-size: 0.65rem; color: var(--dim); margin-left: 8px; letter-spacing: 0.08em; }
+  .mockup-body { padding: 24px; font-size: 0.75rem; line-height: 1.8; color: var(--muted); }
+  .mockup-body .cmd { color: var(--accent2); }
+  .mockup-body .val { color: var(--accent); }
+  .mockup-body .warn { color: var(--accent3); }
+  .mockup-body .ok { color: #28c840; }
+  .mockup-body .label { color: var(--dim); }
+  .mockup-row { margin: 2px 0; }
+  .cursor { display: inline-block; width: 7px; height: 13px; background: var(--accent); vertical-align: text-bottom; animation: cursorblink 1s infinite; }
+  @keyframes cursorblink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; margin-top: 64px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .service-card { background: var(--panel); padding: 40px 32px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); transition: background 0.3s; }
+  .service-card:hover { background: var(--bg3); }
+  .service-card:nth-child(3n) { border-right: none; }
+  .service-card:nth-last-child(-n+3) { border-bottom: none; }
+  .service-icon { font-size: 1.8rem; margin-bottom: 20px; display: block; }
+  .service-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.05rem; margin-bottom: 12px; }
+  .service-desc { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+  .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 56px; align-items: stretch; }
+  .pricing-card { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 36px 32px; display: flex; flex-direction: column; gap: 8px; position: relative; transition: border-color 0.3s, box-shadow 0.3s; }
+  .pricing-card:hover { border-color: var(--border-bright); box-shadow: 0 0 32px var(--glow); }
+  .pricing-featured { border-color: rgba(99,210,255,0.35); background: linear-gradient(160deg, rgba(99,210,255,0.06) 0%, var(--panel) 60%); box-shadow: 0 0 40px rgba(99,210,255,0.1); }
+  .pricing-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; background: var(--accent); color: var(--bg); padding: 4px 14px; border-radius: 20px; white-space: nowrap; font-weight: 600; }
+  .pricing-tier { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .pricing-price { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 2.8rem; letter-spacing: -0.04em; color: var(--text); line-height: 1; }
+  .pricing-note { font-size: 0.78rem; color: var(--dim); font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; }
+  .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; flex: 1; }
+  .pricing-features li { font-size: 0.88rem; color: var(--muted); display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+  .pricing-features li::before { content: '✓'; color: var(--accent2); font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; flex-shrink: 0; margin-top: 1px; }
+  .why-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 48px; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--bg2); }
+  .why-item { padding: 28px 24px; border-right: 1px solid var(--border); }
+  .why-item:last-child { border-right: none; }
+  .why-icon { font-size: 1.4rem; display: block; margin-bottom: 10px; }
+  .why-label { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; margin-bottom: 6px; }
+  .why-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.55; }
+  .process-steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 64px; position: relative; }
+  .process-steps::before { content: ''; position: absolute; top: 24px; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, transparent, var(--border-bright), var(--border-bright), transparent); z-index: 0; }
+  .step { padding: 0 24px; position: relative; z-index: 1; }
+  .step-num { width: 48px; height: 48px; border-radius: 50%; background: var(--bg2); border: 1px solid var(--border-bright); display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); margin-bottom: 20px; }
+  .step-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: 10px; }
+  .step-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+  .cta-section { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .cta-inner { max-width: 1200px; margin: 0 auto; padding: 100px 48px; display: grid; grid-template-columns: 1fr auto; gap: 64px; align-items: center; }
+  .cta-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(2rem, 4vw, 3rem); letter-spacing: -0.03em; line-height: 1.05; }
+  .cta-sub { color: var(--muted); margin-top: 16px; font-size: 1rem; max-width: 480px; }
+  .cta-form { display: flex; flex-direction: column; gap: 12px; min-width: 320px; }
+  .cta-input { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 14px 18px; color: var(--text); font-family: 'Instrument Sans', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .cta-input:focus { border-color: var(--accent); }
+  .cta-input::placeholder { color: var(--dim); }
+  footer { position: relative; z-index: 1; border-top: 1px solid var(--border); padding: 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; background: var(--bg); }
+  .footer-logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; color: var(--text); letter-spacing: -0.02em; }
+  .footer-logo .db { color: var(--accent); }
+  .footer-links { display: flex; gap: 28px; list-style: none; }
+  .footer-links a { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+  .footer-copy { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--dim); letter-spacing: 0.08em; }
+  @keyframes fadeup { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  @media (max-width: 900px) {
+    nav { padding: 16px 24px; }
+    .nav-links { display: none; }
+    .hero { padding: 100px 24px 60px; }
+    .section-inner { padding: 72px 24px; }
+    .product-grid { grid-template-columns: 1fr; gap: 32px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .why-bar { grid-template-columns: 1fr 1fr; }
+    .why-item { border-bottom: 1px solid var(--border); }
+    .why-item:nth-child(2n) { border-right: none; }
+    .process-steps { grid-template-columns: 1fr 1fr; gap: 40px; }
+    .process-steps::before { display: none; }
+    .cta-inner { grid-template-columns: 1fr; }
+    .cta-form { min-width: unset; }
+    .stats-strip { flex-wrap: wrap; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<nav>
+  <a href="#" class="nav-logo">
+    <span><span class="db">DB</span>TechAI</span>
+    <span class="badge">v1.0</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#product">RVDoc</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#webdesign">Web Design</a></li>
+    <li><a href="#process">Process</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get Early Access</a>
+</nav>
+<div class="hero">
+  <div class="hero-orb orb1"></div>
+  <div class="hero-orb orb2"></div>
+  <p class="hero-eyebrow">AI Engineering for the Trades</p>
+  <h1 class="hero-title">
+    We Build AI<br>
+    <span class="line2">That Works</span><br>
+    <span class="line3">In the Field.</span>
+  </h1>
+  <p class="hero-sub">DBTechAI creates intelligent diagnostic tools and AI-powered solutions purpose-built for RV technicians, mobile service professionals, and dealerships — not desk jobs.</p>
+  <div class="hero-actions">
+    <a href="#product" class="btn-primary"><span>↓</span> See RVDoc</a>
+    <a href="#services" class="btn-secondary">Our Services</a>
+  </div>
+</div>
+<div class="stats-strip">
+  <div class="stat-item"><div class="stat-num">6+</div><div class="stat-label">RV Systems Covered</div></div>
+  <div class="stat-item"><div class="stat-num">AI</div><div class="stat-label">Powered Diagnosis</div></div>
+  <div class="stat-item"><div class="stat-num">0ms</div><div class="stat-label">Paperwork Delay</div></div>
+  <div class="stat-item"><div class="stat-num">100%</div><div class="stat-label">Field-First Design</div></div>
+</div>
+<section class="product-section" id="product">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Flagship Product</p>
+    <h2 class="section-title reveal">Introducing <span class="hl">RVDoc</span></h2>
+    <div class="product-grid">
+      <div class="product-card reveal">
+        <div class="product-tag"><span class="dot"></span>Now in Development</div>
+        <div class="product-name">RVDoc AI</div>
+        <p class="product-desc">The first AI diagnostic assistant built specifically for RV technicians. Diagnose faster, document smarter, and close more tickets — all from your phone.</p>
+        <ul class="feature-list">
+          <li>Voice-input diagnostics — talk through your symptoms hands-free</li>
+          <li>AI photo analysis — point your camera at the problem</li>
+          <li>Multi-system categories: electrical, plumbing, slide-outs, leveling & more</li>
+          <li>PDI Mode for pre-delivery inspections</li>
+          <li>Auto-generated repair reports ready to hand off</li>
+          <li>Foreman Mode — AI reviewer to catch missed steps</li>
+        </ul>
+        <a href="#contact" class="btn-primary">Request Early Access →</a>
+      </div>
+      <div class="mockup-panel reveal">
+        <div class="mockup-bar">
+          <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+          <span class="mockup-title">rvdoc — diagnostic session</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-row"><span class="label">system   </span> <span class="val">Lippert Ground Control 3.0</span></div>
+          <div class="mockup-row"><span class="label">unit     </span> <span class="val">2022 Forest River 5th Wheel</span></div>
+          <div class="mockup-row"><span class="label">symptom  </span> <span class="warn">Left-front jack fault code</span></div>
+          <div class="mockup-row">&nbsp;</div>
+          <div class="mockup-row"><span class="cmd">▶ Analyzing fault...</span></div>
+          <div class="mockup-row">&nbsp;</div>
+          <div class="mockup-row"><span class="label">diagnosis</span> <span class="val">Voltage drop under load</span></div>
+          <div class="mockup-row"><span class="label">cause    </span> <span class="val">Corroded chassis ground path</span></div>
+          <div class="mockup-row">&nbsp;</div>
+          <div class="mockup-row"><span class="cmd">▶ Suggested Tests:</span></div>
+          <div class="mockup-row"> 1. Verify retract voltage &lt;12.4V</div>
+          <div class="mockup-row"> 2. Test fresh ground to frame rail</div>
+          <div class="mockup-row"> 3. Inspect wiring splice at J-box</div>
+          <div class="mockup-row">&nbsp;</div>
+          <div class="mockup-row"><span class="cmd">▶ Generating repair report...</span></div>
+          <div class="mockup-row"><span class="ok">✓ Report ready — 3 pages</span></div>
+          <div class="mockup-row">&nbsp;</div>
+          <div class="mockup-row"><span class="label">model    </span> <span class="val">claude-sonnet-4</span> <span class="cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="services">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">What We Do</p>
+    <h2 class="section-title reveal">AI Solutions Built <span class="hl">From the Ground Up</span></h2>
+    <div class="services-grid reveal">
+      <div class="service-card"><span class="service-icon">🔬</span><div class="service-name">AI Diagnostic Tools</div><p class="service-desc">Custom AI assistants for field technicians — voice-driven, photo-aware, and tuned to your specific systems and fault patterns.</p></div>
+      <div class="service-card"><span class="service-icon">📋</span><div class="service-name">Workflow Automation</div><p class="service-desc">Replace paper forms and tribal knowledge with intelligent workflows that capture, structure, and surface the right information at the right time.</p></div>
+      <div class="service-card"><span class="service-icon">🏪</span><div class="service-name">Dealership Integration</div><p class="service-desc">AI tooling that fits into existing DMS platforms. Reduce warranty comebacks by catching misdiagnoses before the unit leaves the lot.</p></div>
+      <div class="service-card"><span class="service-icon">🤖</span><div class="service-name">Agentic AI Development</div><p class="service-desc">Multi-agent systems that reason, review, and act — from Foreman Mode reviewers to fully autonomous diagnostic pipelines.</p></div>
+      <div class="service-card"><span class="service-icon">📱</span><div class="service-name">Mobile-First Apps</div><p class="service-desc">React-based tools designed for one-handed use in a bay or on a jobsite. Not another dashboard for the office.</p></div>
+      <div class="service-card"><span class="service-icon">🎓</span><div class="service-name">Tech Consulting</div><p class="service-desc">Strategic AI advisory for small-to-mid trade businesses. We translate what the technology can actually do into something you can ship.</p></div>
+    </div>
+  </div>
+</section>
+<section id="webdesign" style="background: var(--bg);">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">Web Design Services</p>
+    <h2 class="section-title reveal">Sites That Actually <span class="hl">Work for You</span></h2>
+    <p style="color: var(--muted); max-width: 560px; margin-top: 20px; font-size: 1rem; line-height: 1.75;" class="reveal">Most trades businesses have no website — or one that looks like it was built in 2009. We build fast, modern, AI-enhanced sites that turn visitors into customers. DBTechAI.com is our portfolio. You're looking at our work right now.</p>
+    <div class="pricing-grid reveal">
+      <div class="pricing-card">
+        <div class="pricing-tier">Starter</div>
+        <div class="pricing-price">$499</div>
+        <div class="pricing-note">one-time</div>
+        <ul class="pricing-features">
+          <li>Single-page site (hero, services, contact)</li>
+          <li>Mobile-responsive design</li>
+          <li>Contact form with email routing</li>
+          <li>Google Maps embed</li>
+          <li>Delivered in 5 business days</li>
+          <li>1 round of revisions</li>
+        </ul>
+        <a href="#contact" class="btn-secondary" style="display:block; text-align:center; margin-top: auto;">Get Started →</a>
+      </div>
+      <div class="pricing-card pricing-featured">
+        <div class="pricing-badge">Most Popular</div>
+        <div class="pricing-tier">Pro</div>
+        <div class="pricing-price">$999</div>
+        <div class="pricing-note">one-time + optional $79/mo maintenance</div>
+        <ul class="pricing-features">
+          <li>Multi-page site (up to 5 pages)</li>
+          <li>Custom dark or light design system</li>
+          <li>AI-powered lead capture chatbot</li>
+          <li>Blog or services showcase</li>
+          <li>Basic SEO + Google Search Console</li>
+          <li>Delivered in 10 business days</li>
+          <li>3 rounds of revisions</li>
+        </ul>
+        <a href="#contact" class="btn-primary" style="display:block; text-align:center; margin-top: auto;">Get Started →</a>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">Agency</div>
+        <div class="pricing-price">Custom</div>
+        <div class="pricing-note">scoped per project</div>
+        <ul class="pricing-features">
+          <li>Full custom web application</li>
+          <li>AI features & automation built in</li>
+          <li>CRM / booking integrations</li>
+          <li>Multi-location or franchise builds</li>
+          <li>Ongoing dev retainer available</li>
+          <li>Priority support & SLA</li>
+        </ul>
+        <a href="#contact" class="btn-secondary" style="display:block; text-align:center; margin-top: auto;">Let's Talk →</a>
+      </div>
+    </div>
+    <div class="why-bar reveal">
+      <div class="why-item"><span class="why-icon">⚡</span><div class="why-label">Fast Turnaround</div><div class="why-desc">Starter sites in 5 days. No waiting months for an agency.</div></div>
+      <div class="why-item"><span class="why-icon">🤖</span><div class="why-label">AI-Enhanced</div><div class="why-desc">Chatbots, smart forms, and automations built in — not bolted on.</div></div>
+      <div class="why-item"><span class="why-icon">🔧</span><div class="why-label">Trades-Fluent</div><div class="why-desc">We speak your industry. No explaining what a work order is.</div></div>
+      <div class="why-item"><span class="why-icon">📈</span><div class="why-label">Built to Convert</div><div class="why-desc">Every layout decision is about turning visitors into booked jobs.</div></div>
+    </div>
+  </div>
+</section>
+<section id="process" style="background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-inner">
+    <p class="section-eyebrow reveal">How It Works</p>
+    <h2 class="section-title reveal">From Problem to <span class="hl">Production</span></h2>
+    <div class="process-steps">
+      <div class="step reveal"><div class="step-num">01</div><div class="step-title">Discovery</div><p class="step-desc">We map your workflows, fault patterns, and data — understanding your domain before writing a single line of code.</p></div>
+      <div class="step reveal"><div class="step-num">02</div><div class="step-title">Prototype</div><p class="step-desc">A working demo you can put in a technician's hands in days, not months. Real feedback from real field use.</p></div>
+      <div class="step reveal"><div class="step-num">03</div><div class="step-title">Refine</div><p class="step-desc">We iterate fast based on what actually happens in the bay — not what looks good in a slide deck.</p></div>
+      <div class="step reveal"><div class="step-num">04</div><div class="step-title">Deploy</div><p class="step-desc">Production-grade tools with the infrastructure to scale — from one location to a nationwide dealer network.</p></div>
+    </div>
+  </div>
+</section>
+<section class="cta-section" id="contact">
+  <div class="cta-inner">
+    <div>
+      <h2 class="cta-title reveal">Ready to Work <span style="color: var(--accent);">Together?</span></h2>
+      <p class="cta-sub reveal">Get early access to RVDoc, inquire about a web design project, or tell us about your AI and workflow challenges. We'll respond within 24 hours.</p>
+    </div>
+    <div class="cta-form reveal">
+      <input type="text" class="cta-input" placeholder="Your name">
+      <input type="email" class="cta-input" placeholder="Email address">
+      <select class="cta-input" style="cursor:pointer; color: var(--muted);">
+        <option value="" disabled selected>What can we help with?</option>
+        <option>RVDoc Early Access</option>
+        <option>Web Design — Starter ($499)</option>
+        <option>Web Design — Pro ($999)</option>
+        <option>Web Design — Agency (Custom)</option>
+        <option>AI Consulting / Custom Project</option>
+        <option>Something else</option>
+      </select>
+      <textarea class="cta-input" rows="3" placeholder="Tell us more..." style="resize:vertical; font-family: inherit;"></textarea>
+      <button class="btn-primary" style="justify-content: center;" onclick="handleSubmit(this)">Send Message →</button>
+    </div>
+  </div>
+</section>
+<footer>
+  <div class="footer-logo"><span class="db">DB</span>TechAI</div>
+  <ul class="footer-links">
+    <li><a href="#product">RVDoc</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#webdesign">Web Design</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="mailto:hello@dbtechai.com">hello@dbtechai.com</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 DBTechAI — Lake Elsinore, CA</div>
+</footer>
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 80);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  function handleSubmit(btn) {
+    btn.textContent = '✓ Message Sent!';
+    btn.style.background = 'var(--accent2)';
+    btn.style.color = '#000';
+    setTimeout(() => { btn.textContent = 'Send Message →'; btn.style.background = ''; btn.style.color = ''; }, 3000);
+  }
+  window.addEventListener('scroll', () => {
+    const nav = document.querySelector('nav');
+    nav.style.boxShadow = window.scrollY > 20 ? '0 4px 32px rgba(0,0,0,0.5)' : 'none';
+  });
+</script>
+</body>
+</html>
